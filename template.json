@@ -11,7 +11,7 @@
             "type": "String"
         },
         "publicIPAddresses_lb_app_front1_externalid": {
-            "defaultValue": "/subscriptions/e8286f6b-5560-4997-a774-48ce8cd0bcf3/resourceGroups/lb-web1/providers/Microsoft.Network/publicIPAddresses/lb-app-front1",
+            "defaultValue": "/subscriptions/e8286f6b-5560-4997-a774-48ce8cd0bcf3/resourceGroups/lb-web1/providers/Microsoft.Network/publicIPAddresses/lb-3p-ip1",
             "type": "String"
         }
     },
