@@ -1,0 +1,1244 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "applicationGateways_lb_web1_applicationgateway_name": {
+            "defaultValue": "lb-web1-applicationgateway",
+            "type": "String"
+        },
+        "virtualNetworks_lb_web1_vnet_externalid": {
+            "defaultValue": "/subscriptions/e8286f6b-5560-4997-a774-48ce8cd0bcf3/resourceGroups/lb-web1/providers/Microsoft.Network/virtualNetworks/lb-web1-vnet",
+            "type": "String"
+        },
+        "publicIPAddresses_lb_app_front1_externalid": {
+            "defaultValue": "/subscriptions/e8286f6b-5560-4997-a774-48ce8cd0bcf3/resourceGroups/lb-web1/providers/Microsoft.Network/publicIPAddresses/lb-app-front1",
+            "type": "String"
+        }
+    },
+    "variables": {},
+    "resources": [
+        {
+            "type": "Microsoft.Network/applicationGateways",
+            "apiVersion": "2020-05-01",
+            "name": "[parameters('applicationGateways_lb_web1_applicationgateway_name')]",
+            "location": "northeurope",
+            "identity": {
+                "type": "UserAssigned",
+                "userAssignedIdentities": {
+                    "/subscriptions/e8286f6b-5560-4997-a774-48ce8cd0bcf3/resourcegroups/lb-web1/providers/Microsoft.ManagedIdentity/userAssignedIdentities/lb-web1-managedidentity": {
+                        "principalId": "6a23506e-37db-4438-a83b-592b60d83649",
+                        "clientId": "f18a69dc-8883-4442-b224-c1c637af43df"
+                    }
+                }
+            },
+            "properties": {
+                "sku": {
+                    "name": "Standard_v2",
+                    "tier": "Standard_v2"
+                },
+                "gatewayIPConfigurations": [
+                    {
+                        "name": "appGatewayIpConfig",
+                        "properties": {
+                            "subnet": {
+                                "id": "[concat(parameters('virtualNetworks_lb_web1_vnet_externalid'), '/subnets/gateway')]"
+                            }
+                        }
+                    }
+                ],
+                "sslCertificates": [
+                    {
+                        "name": "cloudListener",
+                        "properties": {
+                            "keyVaultSecretId": "https://lb-web1-keyvault.vault.azure.net/secrets/3peu-selfsigned"
+                        }
+                    },
+                    {
+                        "name": "star-3peu",
+                        "properties": {}
+                    }
+                ],
+                "trustedRootCertificates": [],
+                "frontendIPConfigurations": [
+                    {
+                        "name": "appGwPublicFrontendIp",
+                        "properties": {
+                            "privateIPAllocationMethod": "Dynamic",
+                            "publicIPAddress": {
+                                "id": "[parameters('publicIPAddresses_lb_app_front1_externalid')]"
+                            }
+                        }
+                    }
+                ],
+                "frontendPorts": [
+                    {
+                        "name": "port_443",
+                        "properties": {
+                            "port": 443
+                        }
+                    },
+                    {
+                        "name": "port_80",
+                        "properties": {
+                            "port": 80
+                        }
+                    }
+                ],
+                "backendAddressPools": [
+                    {
+                        "name": "srv-win-pool",
+                        "properties": {
+                            "backendAddresses": []
+                        }
+                    }
+                ],
+                "backendHttpSettingsCollection": [
+                    {
+                        "name": "web-https-settings",
+                        "properties": {
+                            "port": 443,
+                            "protocol": "Https",
+                            "cookieBasedAffinity": "Disabled",
+                            "hostName": "web.3p.eu",
+                            "pickHostNameFromBackendAddress": false,
+                            "affinityCookieName": "ApplicationGatewayAffinity",
+                            "requestTimeout": 20
+                        }
+                    },
+                    {
+                        "name": "ppm-https-settings",
+                        "properties": {
+                            "port": 443,
+                            "protocol": "Https",
+                            "cookieBasedAffinity": "Disabled",
+                            "hostName": "ppm.3p.eu",
+                            "pickHostNameFromBackendAddress": false,
+                            "affinityCookieName": "ApplicationGatewayAffinity",
+                            "requestTimeout": 20
+                        }
+                    },
+                    {
+                        "name": "setup-https-settings",
+                        "properties": {
+                            "port": 443,
+                            "protocol": "Https",
+                            "cookieBasedAffinity": "Disabled",
+                            "hostName": "setup.3p.eu",
+                            "pickHostNameFromBackendAddress": false,
+                            "affinityCookieName": "ApplicationGatewayAffinity",
+                            "requestTimeout": 20
+                        }
+                    },
+                    {
+                        "name": "ppmdev-https-settings",
+                        "properties": {
+                            "port": 443,
+                            "protocol": "Https",
+                            "cookieBasedAffinity": "Disabled",
+                            "hostName": "ppmdev.3p.eu",
+                            "pickHostNameFromBackendAddress": false,
+                            "affinityCookieName": "ApplicationGatewayAffinity",
+                            "requestTimeout": 20
+                        }
+                    },
+                    {
+                        "name": "tools-https-settings",
+                        "properties": {
+                            "port": 443,
+                            "protocol": "Https",
+                            "cookieBasedAffinity": "Disabled",
+                            "hostName": "tools.3p.eu",
+                            "pickHostNameFromBackendAddress": false,
+                            "affinityCookieName": "ApplicationGatewayAffinity",
+                            "requestTimeout": 20
+                        }
+                    },
+                    {
+                        "name": "update-https-settings",
+                        "properties": {
+                            "port": 443,
+                            "protocol": "Https",
+                            "cookieBasedAffinity": "Disabled",
+                            "hostName": "update.3p.eu",
+                            "pickHostNameFromBackendAddress": false,
+                            "affinityCookieName": "ApplicationGatewayAffinity",
+                            "requestTimeout": 20
+                        }
+                    },
+                    {
+                        "name": "webdev-https-settings",
+                        "properties": {
+                            "port": 443,
+                            "protocol": "Https",
+                            "cookieBasedAffinity": "Disabled",
+                            "hostName": "webdev.3p.eu",
+                            "pickHostNameFromBackendAddress": false,
+                            "affinityCookieName": "ApplicationGatewayAffinity",
+                            "requestTimeout": 20
+                        }
+                    },
+                    {
+                        "name": "webfeatures-https-settings",
+                        "properties": {
+                            "port": 443,
+                            "protocol": "Https",
+                            "cookieBasedAffinity": "Disabled",
+                            "hostName": "webfeatures.3p.eu",
+                            "pickHostNameFromBackendAddress": false,
+                            "affinityCookieName": "ApplicationGatewayAffinity",
+                            "requestTimeout": 20
+                        }
+                    },
+                    {
+                        "name": "webnightly-https-settings",
+                        "properties": {
+                            "port": 443,
+                            "protocol": "Https",
+                            "cookieBasedAffinity": "Disabled",
+                            "hostName": "webnightly.3p.eu",
+                            "pickHostNameFromBackendAddress": false,
+                            "affinityCookieName": "ApplicationGatewayAffinity",
+                            "requestTimeout": 20
+                        }
+                    },
+                    {
+                        "name": "webtest-https-settings",
+                        "properties": {
+                            "port": 443,
+                            "protocol": "Https",
+                            "cookieBasedAffinity": "Disabled",
+                            "hostName": "webtest.3p.eu",
+                            "pickHostNameFromBackendAddress": false,
+                            "affinityCookieName": "ApplicationGatewayAffinity",
+                            "requestTimeout": 20
+                        }
+                    },
+                    {
+                        "name": "publications-https-settings",
+                        "properties": {
+                            "port": 443,
+                            "protocol": "Https",
+                            "cookieBasedAffinity": "Disabled",
+                            "hostName": "publications.3p.eu",
+                            "pickHostNameFromBackendAddress": false,
+                            "affinityCookieName": "ApplicationGatewayAffinity",
+                            "requestTimeout": 20
+                        }
+                    },
+                    {
+                        "name": "publicationsdev-https-settings",
+                        "properties": {
+                            "port": 443,
+                            "protocol": "Https",
+                            "cookieBasedAffinity": "Disabled",
+                            "hostName": "publicationsdev.3p.eu",
+                            "pickHostNameFromBackendAddress": false,
+                            "affinityCookieName": "ApplicationGatewayAffinity",
+                            "requestTimeout": 20
+                        }
+                    },
+                    {
+                        "name": "publicationstest-https-settings",
+                        "properties": {
+                            "port": 443,
+                            "protocol": "Https",
+                            "cookieBasedAffinity": "Disabled",
+                            "hostName": "publicationstest.3p.eu",
+                            "pickHostNameFromBackendAddress": false,
+                            "affinityCookieName": "ApplicationGatewayAffinity",
+                            "requestTimeout": 20
+                        }
+                    },
+                    {
+                        "name": "cloud-https-settings",
+                        "properties": {
+                            "port": 443,
+                            "protocol": "Https",
+                            "cookieBasedAffinity": "Disabled",
+                            "hostName": "cloud.3p.eu",
+                            "pickHostNameFromBackendAddress": false,
+                            "requestTimeout": 120
+                        }
+                    },
+                    {
+                        "name": "clouddev-https-settings",
+                        "properties": {
+                            "port": 443,
+                            "protocol": "Https",
+                            "cookieBasedAffinity": "Disabled",
+                            "hostName": "clouddev.3p.eu",
+                            "pickHostNameFromBackendAddress": false,
+                            "requestTimeout": 120
+                        }
+                    }
+                ],
+                "httpListeners": [
+                    {
+                        "name": "webListener",
+                        "properties": {
+                            "frontendIPConfiguration": {
+                                "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_lb_web1_applicationgateway_name')), '/frontendIPConfigurations/appGwPublicFrontendIp')]"
+                            },
+                            "frontendPort": {
+                                "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_lb_web1_applicationgateway_name')), '/frontendPorts/port_443')]"
+                            },
+                            "protocol": "Https",
+                            "sslCertificate": {
+                                "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_lb_web1_applicationgateway_name')), '/sslCertificates/star-3peu')]"
+                            },
+                            "hostName": "web.3p.eu",
+                            "hostNames": [],
+                            "requireServerNameIndication": true,
+                            "customErrorConfigurations": []
+                        }
+                    },
+                    {
+                        "name": "webHttpListener",
+                        "properties": {
+                            "frontendIPConfiguration": {
+                                "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_lb_web1_applicationgateway_name')), '/frontendIPConfigurations/appGwPublicFrontendIp')]"
+                            },
+                            "frontendPort": {
+                                "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_lb_web1_applicationgateway_name')), '/frontendPorts/port_80')]"
+                            },
+                            "protocol": "Http",
+                            "hostName": "web.3p.eu",
+                            "hostNames": [],
+                            "requireServerNameIndication": false,
+                            "customErrorConfigurations": []
+                        }
+                    },
+                    {
+                        "name": "cloudListener",
+                        "properties": {
+                            "frontendIPConfiguration": {
+                                "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_lb_web1_applicationgateway_name')), '/frontendIPConfigurations/appGwPublicFrontendIp')]"
+                            },
+                            "frontendPort": {
+                                "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_lb_web1_applicationgateway_name')), '/frontendPorts/port_443')]"
+                            },
+                            "protocol": "Https",
+                            "sslCertificate": {
+                                "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_lb_web1_applicationgateway_name')), '/sslCertificates/star-3peu')]"
+                            },
+                            "hostName": "cloud.3p.eu",
+                            "hostNames": [],
+                            "requireServerNameIndication": true
+                        }
+                    },
+                    {
+                        "name": "clouddevListener",
+                        "properties": {
+                            "frontendIPConfiguration": {
+                                "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_lb_web1_applicationgateway_name')), '/frontendIPConfigurations/appGwPublicFrontendIp')]"
+                            },
+                            "frontendPort": {
+                                "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_lb_web1_applicationgateway_name')), '/frontendPorts/port_443')]"
+                            },
+                            "protocol": "Https",
+                            "sslCertificate": {
+                                "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_lb_web1_applicationgateway_name')), '/sslCertificates/star-3peu')]"
+                            },
+                            "hostName": "clouddev.3p.eu",
+                            "hostNames": [],
+                            "requireServerNameIndication": true
+                        }
+                    },
+                    {
+                        "name": "updateListener",
+                        "properties": {
+                            "frontendIPConfiguration": {
+                                "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_lb_web1_applicationgateway_name')), '/frontendIPConfigurations/appGwPublicFrontendIp')]"
+                            },
+                            "frontendPort": {
+                                "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_lb_web1_applicationgateway_name')), '/frontendPorts/port_443')]"
+                            },
+                            "protocol": "Https",
+                            "sslCertificate": {
+                                "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_lb_web1_applicationgateway_name')), '/sslCertificates/star-3peu')]"
+                            },
+                            "hostName": "update.3p.eu",
+                            "hostNames": [],
+                            "requireServerNameIndication": true
+                        }
+                    },
+                    {
+                        "name": "setupListener",
+                        "properties": {
+                            "frontendIPConfiguration": {
+                                "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_lb_web1_applicationgateway_name')), '/frontendIPConfigurations/appGwPublicFrontendIp')]"
+                            },
+                            "frontendPort": {
+                                "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_lb_web1_applicationgateway_name')), '/frontendPorts/port_443')]"
+                            },
+                            "protocol": "Https",
+                            "sslCertificate": {
+                                "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_lb_web1_applicationgateway_name')), '/sslCertificates/star-3peu')]"
+                            },
+                            "hostName": "setup.3p.eu",
+                            "hostNames": [],
+                            "requireServerNameIndication": true
+                        }
+                    },
+                    {
+                        "name": "toolsListener",
+                        "properties": {
+                            "frontendIPConfiguration": {
+                                "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_lb_web1_applicationgateway_name')), '/frontendIPConfigurations/appGwPublicFrontendIp')]"
+                            },
+                            "frontendPort": {
+                                "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_lb_web1_applicationgateway_name')), '/frontendPorts/port_443')]"
+                            },
+                            "protocol": "Https",
+                            "sslCertificate": {
+                                "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_lb_web1_applicationgateway_name')), '/sslCertificates/star-3peu')]"
+                            },
+                            "hostName": "tools.3p.eu",
+                            "hostNames": [],
+                            "requireServerNameIndication": true
+                        }
+                    },
+                    {
+                        "name": "updateHttpListener",
+                        "properties": {
+                            "frontendIPConfiguration": {
+                                "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_lb_web1_applicationgateway_name')), '/frontendIPConfigurations/appGwPublicFrontendIp')]"
+                            },
+                            "frontendPort": {
+                                "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_lb_web1_applicationgateway_name')), '/frontendPorts/port_80')]"
+                            },
+                            "protocol": "Http",
+                            "hostName": "update.3p.eu",
+                            "hostNames": [],
+                            "requireServerNameIndication": false
+                        }
+                    },
+                    {
+                        "name": "setupHttpListener",
+                        "properties": {
+                            "frontendIPConfiguration": {
+                                "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_lb_web1_applicationgateway_name')), '/frontendIPConfigurations/appGwPublicFrontendIp')]"
+                            },
+                            "frontendPort": {
+                                "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_lb_web1_applicationgateway_name')), '/frontendPorts/port_80')]"
+                            },
+                            "protocol": "Http",
+                            "hostName": "setup.3p.eu",
+                            "hostNames": [],
+                            "requireServerNameIndication": false
+                        }
+                    },
+                    {
+                        "name": "toolsHttpListener",
+                        "properties": {
+                            "frontendIPConfiguration": {
+                                "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_lb_web1_applicationgateway_name')), '/frontendIPConfigurations/appGwPublicFrontendIp')]"
+                            },
+                            "frontendPort": {
+                                "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_lb_web1_applicationgateway_name')), '/frontendPorts/port_80')]"
+                            },
+                            "protocol": "Http",
+                            "hostName": "tools.3p.eu",
+                            "hostNames": [],
+                            "requireServerNameIndication": false
+                        }
+                    },
+                    {
+                        "name": "cloudHttpListener",
+                        "properties": {
+                            "frontendIPConfiguration": {
+                                "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_lb_web1_applicationgateway_name')), '/frontendIPConfigurations/appGwPublicFrontendIp')]"
+                            },
+                            "frontendPort": {
+                                "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_lb_web1_applicationgateway_name')), '/frontendPorts/port_80')]"
+                            },
+                            "protocol": "Http",
+                            "hostName": "cloud.3p.eu",
+                            "hostNames": [],
+                            "requireServerNameIndication": false
+                        }
+                    },
+                    {
+                        "name": "clouddevHttpListener",
+                        "properties": {
+                            "frontendIPConfiguration": {
+                                "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_lb_web1_applicationgateway_name')), '/frontendIPConfigurations/appGwPublicFrontendIp')]"
+                            },
+                            "frontendPort": {
+                                "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_lb_web1_applicationgateway_name')), '/frontendPorts/port_80')]"
+                            },
+                            "protocol": "Http",
+                            "hostName": "clouddev.3p.eu",
+                            "hostNames": [],
+                            "requireServerNameIndication": false
+                        }
+                    },
+                    {
+                        "name": "ppmdevListener",
+                        "properties": {
+                            "frontendIPConfiguration": {
+                                "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_lb_web1_applicationgateway_name')), '/frontendIPConfigurations/appGwPublicFrontendIp')]"
+                            },
+                            "frontendPort": {
+                                "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_lb_web1_applicationgateway_name')), '/frontendPorts/port_443')]"
+                            },
+                            "protocol": "Https",
+                            "sslCertificate": {
+                                "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_lb_web1_applicationgateway_name')), '/sslCertificates/star-3peu')]"
+                            },
+                            "hostName": "ppmdev.3p.eu",
+                            "hostNames": [],
+                            "requireServerNameIndication": true
+                        }
+                    },
+                    {
+                        "name": "ppmListener",
+                        "properties": {
+                            "frontendIPConfiguration": {
+                                "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_lb_web1_applicationgateway_name')), '/frontendIPConfigurations/appGwPublicFrontendIp')]"
+                            },
+                            "frontendPort": {
+                                "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_lb_web1_applicationgateway_name')), '/frontendPorts/port_443')]"
+                            },
+                            "protocol": "Https",
+                            "sslCertificate": {
+                                "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_lb_web1_applicationgateway_name')), '/sslCertificates/star-3peu')]"
+                            },
+                            "hostName": "ppm.3p.eu",
+                            "hostNames": [],
+                            "requireServerNameIndication": true
+                        }
+                    },
+                    {
+                        "name": "publicationsListener",
+                        "properties": {
+                            "frontendIPConfiguration": {
+                                "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_lb_web1_applicationgateway_name')), '/frontendIPConfigurations/appGwPublicFrontendIp')]"
+                            },
+                            "frontendPort": {
+                                "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_lb_web1_applicationgateway_name')), '/frontendPorts/port_443')]"
+                            },
+                            "protocol": "Https",
+                            "sslCertificate": {
+                                "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_lb_web1_applicationgateway_name')), '/sslCertificates/star-3peu')]"
+                            },
+                            "hostName": "publications.3p.eu",
+                            "hostNames": [],
+                            "requireServerNameIndication": true
+                        }
+                    },
+                    {
+                        "name": "publicationsdevListener",
+                        "properties": {
+                            "frontendIPConfiguration": {
+                                "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_lb_web1_applicationgateway_name')), '/frontendIPConfigurations/appGwPublicFrontendIp')]"
+                            },
+                            "frontendPort": {
+                                "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_lb_web1_applicationgateway_name')), '/frontendPorts/port_443')]"
+                            },
+                            "protocol": "Https",
+                            "sslCertificate": {
+                                "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_lb_web1_applicationgateway_name')), '/sslCertificates/star-3peu')]"
+                            },
+                            "hostName": "publicationsdev.3p.eu",
+                            "hostNames": [],
+                            "requireServerNameIndication": true
+                        }
+                    },
+                    {
+                        "name": "publicationstestListener",
+                        "properties": {
+                            "frontendIPConfiguration": {
+                                "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_lb_web1_applicationgateway_name')), '/frontendIPConfigurations/appGwPublicFrontendIp')]"
+                            },
+                            "frontendPort": {
+                                "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_lb_web1_applicationgateway_name')), '/frontendPorts/port_443')]"
+                            },
+                            "protocol": "Https",
+                            "sslCertificate": {
+                                "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_lb_web1_applicationgateway_name')), '/sslCertificates/star-3peu')]"
+                            },
+                            "hostName": "publicationstest.3p.eu",
+                            "hostNames": [],
+                            "requireServerNameIndication": true
+                        }
+                    },
+                    {
+                        "name": "webdevListener",
+                        "properties": {
+                            "frontendIPConfiguration": {
+                                "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_lb_web1_applicationgateway_name')), '/frontendIPConfigurations/appGwPublicFrontendIp')]"
+                            },
+                            "frontendPort": {
+                                "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_lb_web1_applicationgateway_name')), '/frontendPorts/port_443')]"
+                            },
+                            "protocol": "Https",
+                            "sslCertificate": {
+                                "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_lb_web1_applicationgateway_name')), '/sslCertificates/star-3peu')]"
+                            },
+                            "hostName": "webdev.3p.eu",
+                            "hostNames": [],
+                            "requireServerNameIndication": true
+                        }
+                    },
+                    {
+                        "name": "webtestListener",
+                        "properties": {
+                            "frontendIPConfiguration": {
+                                "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_lb_web1_applicationgateway_name')), '/frontendIPConfigurations/appGwPublicFrontendIp')]"
+                            },
+                            "frontendPort": {
+                                "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_lb_web1_applicationgateway_name')), '/frontendPorts/port_443')]"
+                            },
+                            "protocol": "Https",
+                            "sslCertificate": {
+                                "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_lb_web1_applicationgateway_name')), '/sslCertificates/star-3peu')]"
+                            },
+                            "hostName": "webtest.3p.eu",
+                            "hostNames": [],
+                            "requireServerNameIndication": true
+                        }
+                    },
+                    {
+                        "name": "webdevHttpListener",
+                        "properties": {
+                            "frontendIPConfiguration": {
+                                "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_lb_web1_applicationgateway_name')), '/frontendIPConfigurations/appGwPublicFrontendIp')]"
+                            },
+                            "frontendPort": {
+                                "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_lb_web1_applicationgateway_name')), '/frontendPorts/port_80')]"
+                            },
+                            "protocol": "Http",
+                            "hostName": "webdev.3p.eu",
+                            "hostNames": [],
+                            "requireServerNameIndication": false
+                        }
+                    },
+                    {
+                        "name": "webtestHttpListener",
+                        "properties": {
+                            "frontendIPConfiguration": {
+                                "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_lb_web1_applicationgateway_name')), '/frontendIPConfigurations/appGwPublicFrontendIp')]"
+                            },
+                            "frontendPort": {
+                                "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_lb_web1_applicationgateway_name')), '/frontendPorts/port_80')]"
+                            },
+                            "protocol": "Http",
+                            "hostName": "webtest.3p.eu",
+                            "hostNames": [],
+                            "requireServerNameIndication": false
+                        }
+                    },
+                    {
+                        "name": "webfeaturesListener",
+                        "properties": {
+                            "frontendIPConfiguration": {
+                                "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_lb_web1_applicationgateway_name')), '/frontendIPConfigurations/appGwPublicFrontendIp')]"
+                            },
+                            "frontendPort": {
+                                "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_lb_web1_applicationgateway_name')), '/frontendPorts/port_443')]"
+                            },
+                            "protocol": "Https",
+                            "sslCertificate": {
+                                "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_lb_web1_applicationgateway_name')), '/sslCertificates/star-3peu')]"
+                            },
+                            "hostName": "webfeatures.3p.eu",
+                            "hostNames": [],
+                            "requireServerNameIndication": true
+                        }
+                    },
+                    {
+                        "name": "webfeaturesHttpListener",
+                        "properties": {
+                            "frontendIPConfiguration": {
+                                "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_lb_web1_applicationgateway_name')), '/frontendIPConfigurations/appGwPublicFrontendIp')]"
+                            },
+                            "frontendPort": {
+                                "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_lb_web1_applicationgateway_name')), '/frontendPorts/port_80')]"
+                            },
+                            "protocol": "Http",
+                            "hostName": "webfeatures.3p.eu",
+                            "hostNames": [],
+                            "requireServerNameIndication": false
+                        }
+                    },
+                    {
+                        "name": "webnightlyListener",
+                        "properties": {
+                            "frontendIPConfiguration": {
+                                "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_lb_web1_applicationgateway_name')), '/frontendIPConfigurations/appGwPublicFrontendIp')]"
+                            },
+                            "frontendPort": {
+                                "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_lb_web1_applicationgateway_name')), '/frontendPorts/port_443')]"
+                            },
+                            "protocol": "Https",
+                            "sslCertificate": {
+                                "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_lb_web1_applicationgateway_name')), '/sslCertificates/star-3peu')]"
+                            },
+                            "hostName": "webnightly.3p.eu",
+                            "hostNames": [],
+                            "requireServerNameIndication": true
+                        }
+                    },
+                    {
+                        "name": "webnightlyHttpListener",
+                        "properties": {
+                            "frontendIPConfiguration": {
+                                "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_lb_web1_applicationgateway_name')), '/frontendIPConfigurations/appGwPublicFrontendIp')]"
+                            },
+                            "frontendPort": {
+                                "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_lb_web1_applicationgateway_name')), '/frontendPorts/port_80')]"
+                            },
+                            "protocol": "Http",
+                            "hostName": "webnightly.3p.eu",
+                            "hostNames": [],
+                            "requireServerNameIndication": false
+                        }
+                    }
+                ],
+                "urlPathMaps": [],
+                "requestRoutingRules": [
+                    {
+                        "name": "webRuleHttpsRedirect",
+                        "properties": {
+                            "ruleType": "Basic",
+                            "httpListener": {
+                                "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_lb_web1_applicationgateway_name')), '/httpListeners/webHttpListener')]"
+                            },
+                            "redirectConfiguration": {
+                                "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_lb_web1_applicationgateway_name')), '/redirectConfigurations/webRuleHttpsRedirect')]"
+                            }
+                        }
+                    },
+                    {
+                        "name": "webRule",
+                        "properties": {
+                            "ruleType": "Basic",
+                            "httpListener": {
+                                "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_lb_web1_applicationgateway_name')), '/httpListeners/webListener')]"
+                            },
+                            "backendAddressPool": {
+                                "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_lb_web1_applicationgateway_name')), '/backendAddressPools/srv-win-pool')]"
+                            },
+                            "backendHttpSettings": {
+                                "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_lb_web1_applicationgateway_name')), '/backendHttpSettingsCollection/web-https-settings')]"
+                            }
+                        }
+                    },
+                    {
+                        "name": "cloudRule",
+                        "properties": {
+                            "ruleType": "Basic",
+                            "httpListener": {
+                                "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_lb_web1_applicationgateway_name')), '/httpListeners/cloudListener')]"
+                            },
+                            "backendAddressPool": {
+                                "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_lb_web1_applicationgateway_name')), '/backendAddressPools/srv-win-pool')]"
+                            },
+                            "backendHttpSettings": {
+                                "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_lb_web1_applicationgateway_name')), '/backendHttpSettingsCollection/cloud-https-settings')]"
+                            }
+                        }
+                    },
+                    {
+                        "name": "cloudRuleHttpsRedirect",
+                        "properties": {
+                            "ruleType": "Basic",
+                            "httpListener": {
+                                "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_lb_web1_applicationgateway_name')), '/httpListeners/cloudHttpListener')]"
+                            },
+                            "redirectConfiguration": {
+                                "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_lb_web1_applicationgateway_name')), '/redirectConfigurations/cloudRuleHttpsRedirect')]"
+                            }
+                        }
+                    },
+                    {
+                        "name": "clouddevRule",
+                        "properties": {
+                            "ruleType": "Basic",
+                            "httpListener": {
+                                "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_lb_web1_applicationgateway_name')), '/httpListeners/clouddevListener')]"
+                            },
+                            "backendAddressPool": {
+                                "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_lb_web1_applicationgateway_name')), '/backendAddressPools/srv-win-pool')]"
+                            },
+                            "backendHttpSettings": {
+                                "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_lb_web1_applicationgateway_name')), '/backendHttpSettingsCollection/clouddev-https-settings')]"
+                            }
+                        }
+                    },
+                    {
+                        "name": "clouddevRuleHttpsRedirect",
+                        "properties": {
+                            "ruleType": "Basic",
+                            "httpListener": {
+                                "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_lb_web1_applicationgateway_name')), '/httpListeners/clouddevHttpListener')]"
+                            },
+                            "redirectConfiguration": {
+                                "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_lb_web1_applicationgateway_name')), '/redirectConfigurations/clouddevRuleHttpsRedirect')]"
+                            }
+                        }
+                    },
+                    {
+                        "name": "setupRule",
+                        "properties": {
+                            "ruleType": "Basic",
+                            "httpListener": {
+                                "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_lb_web1_applicationgateway_name')), '/httpListeners/setupListener')]"
+                            },
+                            "backendAddressPool": {
+                                "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_lb_web1_applicationgateway_name')), '/backendAddressPools/srv-win-pool')]"
+                            },
+                            "backendHttpSettings": {
+                                "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_lb_web1_applicationgateway_name')), '/backendHttpSettingsCollection/setup-https-settings')]"
+                            }
+                        }
+                    },
+                    {
+                        "name": "setupRuleHttpsRedirect",
+                        "properties": {
+                            "ruleType": "Basic",
+                            "httpListener": {
+                                "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_lb_web1_applicationgateway_name')), '/httpListeners/setupHttpListener')]"
+                            },
+                            "redirectConfiguration": {
+                                "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_lb_web1_applicationgateway_name')), '/redirectConfigurations/setupRuleHttpsRedirect')]"
+                            }
+                        }
+                    },
+                    {
+                        "name": "updateRule",
+                        "properties": {
+                            "ruleType": "Basic",
+                            "httpListener": {
+                                "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_lb_web1_applicationgateway_name')), '/httpListeners/updateListener')]"
+                            },
+                            "backendAddressPool": {
+                                "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_lb_web1_applicationgateway_name')), '/backendAddressPools/srv-win-pool')]"
+                            },
+                            "backendHttpSettings": {
+                                "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_lb_web1_applicationgateway_name')), '/backendHttpSettingsCollection/update-https-settings')]"
+                            }
+                        }
+                    },
+                    {
+                        "name": "updateRuleHttpsRedirect",
+                        "properties": {
+                            "ruleType": "Basic",
+                            "httpListener": {
+                                "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_lb_web1_applicationgateway_name')), '/httpListeners/updateHttpListener')]"
+                            },
+                            "redirectConfiguration": {
+                                "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_lb_web1_applicationgateway_name')), '/redirectConfigurations/updateRuleHttpsRedirect')]"
+                            }
+                        }
+                    },
+                    {
+                        "name": "toolsRule",
+                        "properties": {
+                            "ruleType": "Basic",
+                            "httpListener": {
+                                "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_lb_web1_applicationgateway_name')), '/httpListeners/toolsListener')]"
+                            },
+                            "backendAddressPool": {
+                                "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_lb_web1_applicationgateway_name')), '/backendAddressPools/srv-win-pool')]"
+                            },
+                            "backendHttpSettings": {
+                                "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_lb_web1_applicationgateway_name')), '/backendHttpSettingsCollection/tools-https-settings')]"
+                            }
+                        }
+                    },
+                    {
+                        "name": "toolsRuleHttpsRedirect",
+                        "properties": {
+                            "ruleType": "Basic",
+                            "httpListener": {
+                                "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_lb_web1_applicationgateway_name')), '/httpListeners/toolsHttpListener')]"
+                            },
+                            "redirectConfiguration": {
+                                "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_lb_web1_applicationgateway_name')), '/redirectConfigurations/toolsRuleHttpsRedirect')]"
+                            }
+                        }
+                    },
+                    {
+                        "name": "ppmRule",
+                        "properties": {
+                            "ruleType": "Basic",
+                            "httpListener": {
+                                "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_lb_web1_applicationgateway_name')), '/httpListeners/ppmListener')]"
+                            },
+                            "backendAddressPool": {
+                                "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_lb_web1_applicationgateway_name')), '/backendAddressPools/srv-win-pool')]"
+                            },
+                            "backendHttpSettings": {
+                                "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_lb_web1_applicationgateway_name')), '/backendHttpSettingsCollection/ppm-https-settings')]"
+                            }
+                        }
+                    },
+                    {
+                        "name": "ppmdevRule",
+                        "properties": {
+                            "ruleType": "Basic",
+                            "httpListener": {
+                                "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_lb_web1_applicationgateway_name')), '/httpListeners/ppmdevListener')]"
+                            },
+                            "backendAddressPool": {
+                                "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_lb_web1_applicationgateway_name')), '/backendAddressPools/srv-win-pool')]"
+                            },
+                            "backendHttpSettings": {
+                                "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_lb_web1_applicationgateway_name')), '/backendHttpSettingsCollection/ppmdev-https-settings')]"
+                            }
+                        }
+                    },
+                    {
+                        "name": "publicationsRule",
+                        "properties": {
+                            "ruleType": "Basic",
+                            "httpListener": {
+                                "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_lb_web1_applicationgateway_name')), '/httpListeners/publicationsListener')]"
+                            },
+                            "backendAddressPool": {
+                                "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_lb_web1_applicationgateway_name')), '/backendAddressPools/srv-win-pool')]"
+                            },
+                            "backendHttpSettings": {
+                                "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_lb_web1_applicationgateway_name')), '/backendHttpSettingsCollection/publications-https-settings')]"
+                            }
+                        }
+                    },
+                    {
+                        "name": "publicationsdevRule",
+                        "properties": {
+                            "ruleType": "Basic",
+                            "httpListener": {
+                                "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_lb_web1_applicationgateway_name')), '/httpListeners/publicationsdevListener')]"
+                            },
+                            "backendAddressPool": {
+                                "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_lb_web1_applicationgateway_name')), '/backendAddressPools/srv-win-pool')]"
+                            },
+                            "backendHttpSettings": {
+                                "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_lb_web1_applicationgateway_name')), '/backendHttpSettingsCollection/publicationsdev-https-settings')]"
+                            }
+                        }
+                    },
+                    {
+                        "name": "publicationstestRule",
+                        "properties": {
+                            "ruleType": "Basic",
+                            "httpListener": {
+                                "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_lb_web1_applicationgateway_name')), '/httpListeners/publicationstestListener')]"
+                            },
+                            "backendAddressPool": {
+                                "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_lb_web1_applicationgateway_name')), '/backendAddressPools/srv-win-pool')]"
+                            },
+                            "backendHttpSettings": {
+                                "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_lb_web1_applicationgateway_name')), '/backendHttpSettingsCollection/publicationstest-https-settings')]"
+                            }
+                        }
+                    },
+                    {
+                        "name": "webdevRule",
+                        "properties": {
+                            "ruleType": "Basic",
+                            "httpListener": {
+                                "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_lb_web1_applicationgateway_name')), '/httpListeners/webdevListener')]"
+                            },
+                            "backendAddressPool": {
+                                "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_lb_web1_applicationgateway_name')), '/backendAddressPools/srv-win-pool')]"
+                            },
+                            "backendHttpSettings": {
+                                "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_lb_web1_applicationgateway_name')), '/backendHttpSettingsCollection/webdev-https-settings')]"
+                            }
+                        }
+                    },
+                    {
+                        "name": "webtestRule",
+                        "properties": {
+                            "ruleType": "Basic",
+                            "httpListener": {
+                                "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_lb_web1_applicationgateway_name')), '/httpListeners/webtestListener')]"
+                            },
+                            "backendAddressPool": {
+                                "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_lb_web1_applicationgateway_name')), '/backendAddressPools/srv-win-pool')]"
+                            },
+                            "backendHttpSettings": {
+                                "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_lb_web1_applicationgateway_name')), '/backendHttpSettingsCollection/webtest-https-settings')]"
+                            }
+                        }
+                    },
+                    {
+                        "name": "webdevRuleHttpsRedirect",
+                        "properties": {
+                            "ruleType": "Basic",
+                            "httpListener": {
+                                "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_lb_web1_applicationgateway_name')), '/httpListeners/webdevHttpListener')]"
+                            },
+                            "redirectConfiguration": {
+                                "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_lb_web1_applicationgateway_name')), '/redirectConfigurations/webdevRuleHttpsRedirect')]"
+                            }
+                        }
+                    },
+                    {
+                        "name": "webtestRuleHttpsRedirect",
+                        "properties": {
+                            "ruleType": "Basic",
+                            "httpListener": {
+                                "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_lb_web1_applicationgateway_name')), '/httpListeners/webtestHttpListener')]"
+                            },
+                            "redirectConfiguration": {
+                                "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_lb_web1_applicationgateway_name')), '/redirectConfigurations/webtestRuleHttpsRedirect')]"
+                            }
+                        }
+                    },
+                    {
+                        "name": "webfeaturesRule",
+                        "properties": {
+                            "ruleType": "Basic",
+                            "httpListener": {
+                                "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_lb_web1_applicationgateway_name')), '/httpListeners/webfeaturesListener')]"
+                            },
+                            "backendAddressPool": {
+                                "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_lb_web1_applicationgateway_name')), '/backendAddressPools/srv-win-pool')]"
+                            },
+                            "backendHttpSettings": {
+                                "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_lb_web1_applicationgateway_name')), '/backendHttpSettingsCollection/webfeatures-https-settings')]"
+                            }
+                        }
+                    },
+                    {
+                        "name": "webfeaturesRuleHttpsRedirect",
+                        "properties": {
+                            "ruleType": "Basic",
+                            "httpListener": {
+                                "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_lb_web1_applicationgateway_name')), '/httpListeners/webfeaturesHttpListener')]"
+                            },
+                            "redirectConfiguration": {
+                                "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_lb_web1_applicationgateway_name')), '/redirectConfigurations/webfeaturesRuleHttpsRedirect')]"
+                            }
+                        }
+                    },
+                    {
+                        "name": "webnightlyRule",
+                        "properties": {
+                            "ruleType": "Basic",
+                            "httpListener": {
+                                "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_lb_web1_applicationgateway_name')), '/httpListeners/webnightlyListener')]"
+                            },
+                            "backendAddressPool": {
+                                "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_lb_web1_applicationgateway_name')), '/backendAddressPools/srv-win-pool')]"
+                            },
+                            "backendHttpSettings": {
+                                "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_lb_web1_applicationgateway_name')), '/backendHttpSettingsCollection/webnightly-https-settings')]"
+                            }
+                        }
+                    },
+                    {
+                        "name": "webnightlyRuleHttpsRedirect",
+                        "properties": {
+                            "ruleType": "Basic",
+                            "httpListener": {
+                                "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_lb_web1_applicationgateway_name')), '/httpListeners/webnightlyHttpListener')]"
+                            },
+                            "redirectConfiguration": {
+                                "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_lb_web1_applicationgateway_name')), '/redirectConfigurations/webnightlyRuleHttpsRedirect')]"
+                            }
+                        }
+                    }
+                ],
+                "probes": [
+                    {
+                        "name": "cloudProbe",
+                        "properties": {
+                            "protocol": "Https",
+                            "host": "cloud.3p.eu",
+                            "path": "/",
+                            "interval": 30,
+                            "timeout": 30,
+                            "unhealthyThreshold": 3,
+                            "pickHostNameFromBackendHttpSettings": false,
+                            "minServers": 0,
+                            "match": {
+                                "statusCodes": [
+                                    "200-399"
+                                ]
+                            }
+                        }
+                    }
+                ],
+                "rewriteRuleSets": [],
+                "redirectConfigurations": [
+                    {
+                        "name": "webRuleHttpsRedirect",
+                        "properties": {
+                            "redirectType": "Permanent",
+                            "targetListener": {
+                                "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_lb_web1_applicationgateway_name')), '/httpListeners/webListener')]"
+                            },
+                            "includePath": true,
+                            "includeQueryString": true,
+                            "requestRoutingRules": [
+                                {
+                                    "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_lb_web1_applicationgateway_name')), '/requestRoutingRules/webRuleHttpsRedirect')]"
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        "name": "cloudRuleHttpsRedirect",
+                        "properties": {
+                            "redirectType": "Permanent",
+                            "targetListener": {
+                                "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_lb_web1_applicationgateway_name')), '/httpListeners/cloudListener')]"
+                            },
+                            "includePath": true,
+                            "includeQueryString": true,
+                            "requestRoutingRules": [
+                                {
+                                    "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_lb_web1_applicationgateway_name')), '/requestRoutingRules/cloudRuleHttpsRedirect')]"
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        "name": "clouddevRuleHttpsRedirect",
+                        "properties": {
+                            "redirectType": "Permanent",
+                            "targetListener": {
+                                "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_lb_web1_applicationgateway_name')), '/httpListeners/clouddevListener')]"
+                            },
+                            "includePath": true,
+                            "includeQueryString": true,
+                            "requestRoutingRules": [
+                                {
+                                    "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_lb_web1_applicationgateway_name')), '/requestRoutingRules/clouddevRuleHttpsRedirect')]"
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        "name": "setupRuleHttpsRedirect",
+                        "properties": {
+                            "redirectType": "Permanent",
+                            "targetListener": {
+                                "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_lb_web1_applicationgateway_name')), '/httpListeners/setupListener')]"
+                            },
+                            "includePath": true,
+                            "includeQueryString": true,
+                            "requestRoutingRules": [
+                                {
+                                    "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_lb_web1_applicationgateway_name')), '/requestRoutingRules/setupRuleHttpsRedirect')]"
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        "name": "updateRuleHttpsRedirect",
+                        "properties": {
+                            "redirectType": "Permanent",
+                            "targetListener": {
+                                "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_lb_web1_applicationgateway_name')), '/httpListeners/updateListener')]"
+                            },
+                            "includePath": true,
+                            "includeQueryString": true,
+                            "requestRoutingRules": [
+                                {
+                                    "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_lb_web1_applicationgateway_name')), '/requestRoutingRules/updateRuleHttpsRedirect')]"
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        "name": "toolsRuleHttpsRedirect",
+                        "properties": {
+                            "redirectType": "Permanent",
+                            "targetListener": {
+                                "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_lb_web1_applicationgateway_name')), '/httpListeners/toolsListener')]"
+                            },
+                            "includePath": true,
+                            "includeQueryString": true,
+                            "requestRoutingRules": [
+                                {
+                                    "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_lb_web1_applicationgateway_name')), '/requestRoutingRules/toolsRuleHttpsRedirect')]"
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        "name": "webdevRuleHttpsRedirect",
+                        "properties": {
+                            "redirectType": "Permanent",
+                            "targetListener": {
+                                "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_lb_web1_applicationgateway_name')), '/httpListeners/webdevListener')]"
+                            },
+                            "includePath": true,
+                            "includeQueryString": true,
+                            "requestRoutingRules": [
+                                {
+                                    "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_lb_web1_applicationgateway_name')), '/requestRoutingRules/webdevRuleHttpsRedirect')]"
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        "name": "webtestRuleHttpsRedirect",
+                        "properties": {
+                            "redirectType": "Permanent",
+                            "targetListener": {
+                                "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_lb_web1_applicationgateway_name')), '/httpListeners/webtestListener')]"
+                            },
+                            "includePath": true,
+                            "includeQueryString": true,
+                            "requestRoutingRules": [
+                                {
+                                    "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_lb_web1_applicationgateway_name')), '/requestRoutingRules/webtestRuleHttpsRedirect')]"
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        "name": "webfeaturesRuleHttpsRedirect",
+                        "properties": {
+                            "redirectType": "Permanent",
+                            "targetListener": {
+                                "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_lb_web1_applicationgateway_name')), '/httpListeners/webfeaturesListener')]"
+                            },
+                            "includePath": true,
+                            "includeQueryString": true,
+                            "requestRoutingRules": [
+                                {
+                                    "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_lb_web1_applicationgateway_name')), '/requestRoutingRules/webfeaturesRuleHttpsRedirect')]"
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        "name": "webnightlyRuleHttpsRedirect",
+                        "properties": {
+                            "redirectType": "Permanent",
+                            "targetListener": {
+                                "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_lb_web1_applicationgateway_name')), '/httpListeners/webnightlyListener')]"
+                            },
+                            "includePath": true,
+                            "includeQueryString": true,
+                            "requestRoutingRules": [
+                                {
+                                    "id": "[concat(resourceId('Microsoft.Network/applicationGateways', parameters('applicationGateways_lb_web1_applicationgateway_name')), '/requestRoutingRules/webnightlyRuleHttpsRedirect')]"
+                                }
+                            ]
+                        }
+                    }
+                ],
+                "privateLinkConfigurations": [],
+                "sslPolicy": {
+                    "policyType": "Predefined",
+                    "policyName": "AppGwSslPolicy20150501"
+                },
+                "enableHttp2": false,
+                "autoscaleConfiguration": {
+                    "minCapacity": 0,
+                    "maxCapacity": 2
+                },
+                "customErrorConfigurations": []
+            }
+        }
+    ]
+}
