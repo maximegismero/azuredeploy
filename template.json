@@ -48,12 +48,6 @@
                 ],
                 "sslCertificates": [
                     {
-                        "name": "cloudListener",
-                        "properties": {
-                            "keyVaultSecretId": "https://lb-web1-keyvault.vault.azure.net/secrets/3peu-selfsigned"
-                        }
-                    },
-                    {
                         "name": "star-3peu",
                         "properties": {}
                     }
